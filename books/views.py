@@ -1,3 +1,8 @@
 from django.shortcuts import render
+from django.core.handlers.wsgi import WSGIRequest
 
-# Create your views here.
+def get_hello(request: WSGIRequest) -> HttpResponse:
+    return HttpResponse("Hello world!")
+
+
+def get_uuids_a(request: WSGIRequest) -> HttpResponse:
