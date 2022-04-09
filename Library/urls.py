@@ -23,4 +23,5 @@ urlpatterns = {
     path('admin/', admin.site.urls),
     path('', get_hello),
     path('uuids_a', get_uuids_a),
+    path('uuids_b', get_uuids_b),
 }
