@@ -17,11 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from books.views import get_hello
+from books.views import get_hello, get_argument_from_path, get_uuids_b, get_uuids_a
 
-urlpatterns = {
+urlpatterns = [
     path('admin/', admin.site.urls),
     path('', get_hello),
     path('uuids_a', get_uuids_a),
     path('uuids_b', get_uuids_b),
-}
+    path('path-args/<int:x>/<str:y>/<slug:z>', get_argument_from_path, name="get_fom_path"),
+]
