@@ -14,15 +14,24 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.contrib import admin
 from django.urls import path
 
-from books.views import get_hello, get_argument_from_path, get_uuids_b, get_uuids_a
+from books.views import get_hello, get_argument_from_path, get_uuids_b, get_uuids_a, get_arguments_from_query, \
+    check_http_query_type, raise_error_for_fun, get_headers
 
-urlpatterns = [
+urlpatterns = {
     path('admin/', admin.site.urls),
     path('', get_hello),
     path('uuids_a', get_uuids_a),
     path('uuids_b', get_uuids_b),
-    path('path-args/<int:x>/<str:y>/<slug:z>', get_argument_from_path, name="get_fom_path"),
-]
+    path('path-args/<int:x>/<str:y>/<slug:z>', get_argument_from_path, name="get_from_path"),
+    path('query-args', get_arguments_from_query, name="get_from_query"),
+    path('check-type', check_http_query_type, name="get_from_type"),
+    path('get_headers', get_headers, name="get_headers"),
+    path('raise_error', raise_error_for_fun, name="raise_error"),
+}
+
+# if settings.DEBUG:
+#     urlpatterns.append(path('admin/'))
