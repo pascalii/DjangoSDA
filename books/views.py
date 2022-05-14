@@ -5,11 +5,16 @@ from django.core.exceptions import BadRequest
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404
+from django.urls import reverse_lazy
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import TemplateView, ListView, DetailView
-
+from django.views.generic import TemplateView, ListView, DetailView, FormView, CreateView, UpdateView
 from books.models import BookAuthor, Category, Book
+from books.forms import CategoryForm, BookForm, AuthorForm
+
+import logging
+logger = logging.getLogger("Igor")
+
 
 
 class AuthorListBaseView(View):
@@ -17,6 +22,7 @@ class AuthorListBaseView(View):
     queryset = BookAuthor.objects.all()  # type: ignore
 
     def get(self, request: WSGIRequest, *args, **kwargs):
+        # logger.debug(f"{request} ---")
         context = {"authors": self.queryset}
         return render(request, template_name=self.template_name, context=context)
 
@@ -38,6 +44,48 @@ class BookDetailsView(DetailView):
     def get_object(self, **kwargs):
         return get_object_or_404(Book, id=self.kwargs.get("pk"))
 
+class CategoryCreateFormView(FormView):
+    template_name = "category_form.html"
+    form_class = CategoryForm
+    success_url = reverse_lazy("category_list")
+
+    def form_invalid(self, form):
+        logger.critical(f'FORM CRITICAL ERROR, MORE INFO {form}')
+        return super().form_invalid(form)
+
+    def form_valid(self, form):
+        result = super().form_valid(form)
+        logger.info(f"form = {form}")
+        logger.info(f"form.cleaned_data = {form.cleaned_data}")  # cleaned means with removed html indicators
+        check_entity = Category.objects.create(**form.cleaned_data)
+        logger.info(f"check_entity-id={check_entity.id}")
+        return result
+
+class AuthorCreateView(CreateView):
+    template_name = "author_form.html"
+    form_class = AuthorForm
+    success_url = reverse_lazy("authors_list")
+
+class AuthorUpdateView(UpdateView):
+    template_name = "author_form.html"
+    form_class = AuthorForm
+    success_url = reverse_lazy("authors_list")
+
+    def get_object(self, **kwargs):
+        return get_object_or_404(BookAuthor, id=self.kwargs.get("pk"))
+
+class BookCreateView(CreateView):
+    template_name = "book_form.html"
+    form_class = BookForm
+    success_url = reverse_lazy("book-list")
+
+class BookUpdateView(UpdateView):
+    template_name = "book_form.html"
+    form_class = BookForm
+    success_url = reverse_lazy("books_list")
+
+    def get_object(self, **kwargs):
+        return get_object_or_404(Book, id=self.kwargs.get("pk"))
 
 def get_hello_world(request: WSGIRequest) -> HttpResponse:
     # return HttpResponse("Hello world")
@@ -49,7 +97,7 @@ def get_uuids_list_a(request: WSGIRequest) -> HttpResponse:
     uuids = [str(uuid4()) for _ in range(10)]
     # uuids_as_json = json.dumps(uuids)
     # return HttpResponse(uuids_as_json)
-    return render(request, template_name="uuids_list.html", context={"uuids": uuids})
+    return render(request, template_name="uuids_a.html", context={"uuids": uuids})
 
 
 def get_uuids_list_b(request: WSGIRequest) -> JsonResponse:

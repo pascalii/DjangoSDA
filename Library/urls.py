@@ -36,5 +36,5 @@ urlpatterns = [
 """
 ex. 21
 """
-if settings.DEBUG:
-    urlpatterns.append(path('admin/', admin.site.urls))
+# if settings.DEBUG:
+#     urlpatterns.append(path('admin/', admin.site.urls))
