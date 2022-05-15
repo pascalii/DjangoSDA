@@ -19,11 +19,13 @@ from django.urls import path, include
 
 # from books.views import get_hello_world, get_uuids_list_a, get_uuids_list_b, get_argument_from_path, \
 #     get_arguments_from_query, check_http_query_type, get_headers, raise_error_for_fun
+from books.views import get_hello
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
-    path('books/', include('books.urls'))
-    # path('', get_hello_world, name="home"),
+    path('books/', include('books.urls')),
+    path('users/', include('users.urls')),
+    path('', get_hello, name="home"),
     # path('uuids_a/', get_uuids_list_a, name="uuids_a"),
     # path('uuids_b/', get_uuids_list_b, name="uuids_b"),
     # path('path-args/<int:first_arg>/<str:second_arg>/<slug:third_arg>/', get_argument_from_path, name="path_args"),
@@ -36,5 +38,5 @@ urlpatterns = [
 """
 ex. 21
 """
-# if settings.DEBUG:
-#     urlpatterns.append(path('admin/', admin.site.urls))
+if settings.DEBUG:
+    urlpatterns.append(path('admin/', admin.site.urls))

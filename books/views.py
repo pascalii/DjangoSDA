@@ -1,14 +1,16 @@
 import json
 from uuid import uuid4
 
-from django.core.exceptions import BadRequest
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.core.exceptions import BadRequest, PermissionDenied
 from django.core.handlers.wsgi import WSGIRequest
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import TemplateView, ListView, DetailView, FormView, CreateView, UpdateView
+from django.views.generic import TemplateView, ListView, DetailView, FormView, CreateView, UpdateView, DeleteView
 from books.models import BookAuthor, Category, Book
 from books.forms import CategoryForm, BookForm, AuthorForm
 
@@ -77,20 +79,47 @@ class AuthorUpdateView(UpdateView):
 class BookCreateView(CreateView):
     template_name = "book_form.html"
     form_class = BookForm
-    success_url = reverse_lazy("book-list")
+    # success_url = reverse_lazy("book-list")
+
+    def get_success_url(self):
+        return reverse_lazy("book_list")
 
 class BookUpdateView(UpdateView):
     template_name = "book_form.html"
     form_class = BookForm
-    success_url = reverse_lazy("books_list")
+    # success_url = reverse_lazy("books_list")
+
+    def get_success_url(self):
+        return reverse_lazy("book_list")
 
     def get_object(self, **kwargs):
         return get_object_or_404(Book, id=self.kwargs.get("pk"))
 
-def get_hello_world(request: WSGIRequest) -> HttpResponse:
-    # return HttpResponse("Hello world")
-    hello_str: str = "Hello world"
-    return render(request, template_name="hello_world.html", context={"hello_var": hello_str})
+class BookDeleteView(DeleteView):
+    template_name = "book_delete.html"
+    model = Book
+    success_url = reverse_lazy("book_list")
+
+    def get_object(self, **kwargs):
+        return get_object_or_404(Book, id=self.kwargs.get("pk"))
+
+# def get_hello_world(request: WSGIRequest) -> HttpResponse:
+#     # return HttpResponse("Hello world")
+#     hello_str: str = "Hello world"
+#     return render(request, template_name="hello_world.html", context={"hello_var": hello_str})
+
+@login_required
+def get_hello(request: WSGIRequest) -> HttpResponse:
+    user: User = request.user  # type: ignore
+    # password = None if user.is_anonymous else user.password
+    # email = None if user.is_anonymous else user.email
+    # date_joined = None if user.is_anonymous else user.date_joined
+    # if not user.is_authenticated:
+    #     raise PermissionDenied()
+    #     return HttpResponseRedirect(reverse('login'))
+    is_auth: bool = user.is_authenticated
+    hello = f"Hello {user.username}. That's your password: {user.password}, your email: {user.email} and date you joined: {user.date_joined}"
+    return render(request, template_name="hello_world.html", context={"hello_var": hello, "is_authenticated": is_auth})
 
 
 def get_uuids_list_a(request: WSGIRequest) -> HttpResponse:
@@ -155,6 +184,8 @@ def get_headers(request: WSGIRequest) -> JsonResponse:
     return JsonResponse({"headers": dict(headers)})
 
 
-def raise_error_for_fun(request: WSGIRequest):
-    raise BadRequest("My error")
-    # return HttpResponse()
+@csrf_exempt
+def raise_error_for_fun(request: WSGIRequest) -> HttpResponse:
+    if request.method != "GET":
+        raise BadRequest("Method not allowed")
+    return HttpResponse("Everything ok.")
